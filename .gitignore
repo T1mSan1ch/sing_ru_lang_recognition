@@ -46,3 +46,6 @@ celerybeat-schedule
 
 # Jupyter
 .ipynb_checkpoints/
+
+
+**/__pycache__
