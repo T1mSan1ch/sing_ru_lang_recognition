@@ -12,6 +12,8 @@ from fastapi import FastAPI, HTTPException, Request
 
 from app.aggregator import (
     AggregatorConfig,
+    LocalHFProvider,
+    LocalHFProviderConfig,
     OpenAIAPIProvider,
     OpenAIProviderConfig,
     SentenceAggregator,
@@ -48,6 +50,22 @@ def _build_aggregator() -> SentenceAggregator:
                 model=settings.llm_model,
                 base_url=settings.llm_base_url,
                 api_key=settings.llm_api_key or "not-needed",
+            )
+        )
+    elif settings.llm_provider == "local":
+        if not settings.llm_model:
+            raise RuntimeError("Set NONVERBAL_LLM_MODEL for local mode.")
+        logger.info(
+            "Using local LLM provider with model=%s device=%s",
+            settings.llm_model,
+            settings.llm_local_device,
+        )
+        provider = LocalHFProvider(
+            LocalHFProviderConfig(
+                model=settings.llm_model,
+                device=settings.llm_local_device,
+                temperature=settings.llm_local_temperature,
+                max_tokens=settings.llm_local_max_tokens,
             )
         )
     else:

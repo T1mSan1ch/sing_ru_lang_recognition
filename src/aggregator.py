@@ -3,6 +3,8 @@
 from app.aggregator import (
     AggregatorConfig,
     LLMProvider,
+    LocalHFProvider,
+    LocalHFProviderConfig,
     OpenAIAPIProvider,
     OpenAIProviderConfig,
     SentenceAggregator,
@@ -13,6 +15,8 @@ from app.aggregator import (
 __all__ = [
     "AggregatorConfig",
     "LLMProvider",
+    "LocalHFProvider",
+    "LocalHFProviderConfig",
     "OpenAIAPIProvider",
     "OpenAIProviderConfig",
     "SentenceAggregator",
