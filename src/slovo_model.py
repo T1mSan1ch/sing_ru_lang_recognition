@@ -114,8 +114,9 @@ class SlovoONNXModel:
         return self._to_model_layout(data)
 
     def _to_model_layout(self, data: np.ndarray) -> np.ndarray:
+        source_dtype = data.dtype
         data = data.astype(np.float32, copy=False)
-        if data.max() > 1.0:
+        if np.issubdtype(source_dtype, np.integer) and data.max() > 1.0:
             data /= 255.0
 
         if data.ndim == 5:
@@ -247,4 +248,3 @@ class SlovoONNXModel:
         exp = np.exp(shifted)
         probs = exp / np.sum(exp)
         return float(np.max(probs))
-
