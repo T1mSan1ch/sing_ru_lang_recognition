@@ -1,0 +1,43 @@
+# Operating system and editor files
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+.claude/
+
+# Python caches and virtual environments
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+.venv/
+venv/
+env/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Local datasets, manifests, checkpoints, and experiment outputs
+/data/
+/manifests/
+/work_dirs/
+/results/
+/kaggle_output/
+/output/
+/tmp/
+*.pt
+*.pth
+*.ckpt
+*.log
+*.tar.gz
+
+# Local archives and diploma documents are not part of the source repository
+*.zip
+*.docx
+
+# Matplotlib runtime cache
+reports/.matplotlib/
