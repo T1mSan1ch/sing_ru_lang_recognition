@@ -1,20 +1,33 @@
-# ISLR Research Pipeline
+# Russian Sign Language Recognition
 
-> Воспроизводимый исследовательский пайплайн для изолированного распознавания
-> жестового языка: подготовка датасетов, обучение video-transformer моделей,
-> ablation study, cross-lingual transfer и эксперименты с vision-language моделями.
+> Полный стек распознавания русского жестового языка: FastAPI-сервис для
+> обработки видео и сборки фраз, а также воспроизводимый исследовательский
+> пайплайн для обучения и сравнения моделей.
 
 ![Python](https://img.shields.io/badge/Python-3.10%2B-3776AB?logo=python&logoColor=white)
 ![PyTorch](https://img.shields.io/badge/PyTorch-2.6-EE4C2C?logo=pytorch&logoColor=white)
+![FastAPI](https://img.shields.io/badge/FastAPI-0.115%2B-009688?logo=fastapi&logoColor=white)
 ![Kaggle](https://img.shields.io/badge/Kaggle-ready-20BEFF?logo=kaggle&logoColor=white)
-![Tests](https://img.shields.io/badge/smoke_tests-9_passed-2EA44F)
 
-Проект реализован на чистом **PyTorch**, `torchvision`, Hugging Face
-`transformers` и `open_clip`. Он не зависит от MMAction2, MMCV, MMEngine или
-OpenMIM и рассчитан в том числе на Kaggle с Python 3.12.
+Репозиторий объединяет два связанных контура:
+
+- production-контур — HTTP API, ONNX-инференс, preprocessing видео и
+  LLM-агрегация распознанных жестов в естественную фразу;
+- research-контур — подготовка датасетов, обучение VideoMAE/MViTv2,
+  ablation study, cross-lingual transfer и SigLIP2/CLIP-эксперименты.
+
+Исследовательская часть реализована на чистом **PyTorch**, `torchvision`,
+Hugging Face `transformers` и `open_clip`, без MMAction2, MMCV, MMEngine и
+OpenMIM.
 
 ## Возможности
 
+- FastAPI endpoints `/health` и `/recognize`;
+- загрузка видео через multipart или Base64 JSON;
+- нарезка длинного видео на перекрывающиеся MViTv2-клипы;
+- ONNX Runtime для production-инференса;
+- агрегация последовательности жестов через local Hugging Face, OpenAI или
+  vLLM provider;
 - обучение VideoMAE и MViTv2-S для классификации изолированных жестов;
 - предобученные Kinetics-400 веса и layer-wise learning-rate decay;
 - временные и пространственные аугментации видео;
@@ -30,17 +43,15 @@ OpenMIM и рассчитан в том числе на Kaggle с Python 3.12.
 
 ```mermaid
 flowchart LR
-    A[Raw datasets] --> B[Dataset adapters]
-    B --> C[Balanced CSV manifests]
-    C --> D[Video sampling and augmentations]
-    D --> E1[VideoMAE]
-    D --> E2[MViTv2-S]
-    D --> E3[SigLIP2 or CLIP]
-    E1 --> F[Training and evaluation]
-    E2 --> F
-    E3 --> F
-    F --> G[Checkpoints and metrics]
-    G --> H[Aggregate tables and plots]
+    V[Video request] --> P[Preprocessing and clip extraction]
+    P --> O[ONNX gesture recognition]
+    O --> L[LLM sentence aggregation]
+    L --> API[FastAPI response]
+
+    D[Raw datasets] --> M[CSV manifests]
+    M --> T[PyTorch training pipeline]
+    T --> C[Checkpoints and metrics]
+    C -. export .-> O
 ```
 
 Основной контракт данных — CSV-манифест:
@@ -58,6 +69,12 @@ video,label,split,user_id,begin,end,length
 
 ```text
 .
+├── src/
+│   ├── app/main.py             # FastAPI application
+│   ├── app/preprocessing/      # video decoding and MViTv2 clip preparation
+│   ├── app/services/           # recognition orchestration
+│   ├── app/aggregator/         # local/OpenAI/vLLM sentence providers
+│   └── slovo_model.py          # ONNX model wrapper
 ├── islr/                       # библиотека: data, models, losses, training
 ├── scripts/
 │   ├── train.py                # VideoMAE/MViTv2: A, K и C эксперименты
@@ -66,7 +83,7 @@ video,label,split,user_id,begin,end,length
 │   └── data/                   # адаптеры и генераторы CSV-манифестов
 ├── notebooks/                  # Kaggle workflow в Jupytext и .ipynb
 ├── reports/                    # данные, графики и скрипты отчётов
-├── tests/test_smoke.py         # быстрые тесты без GPU и загрузки весов
+├── tests/                      # API preprocessing and research smoke tests
 ├── requirements.txt
 └── pyproject.toml              # настройки Ruff и Pytest
 ```
@@ -85,13 +102,28 @@ python -m pip install --upgrade pip
 python -m pip install -r requirements.txt
 ```
 
-Для локальных проверок дополнительно установите инструменты разработки:
+### Запуск API
+
+Разместите ONNX-модель в локальной директории `models/` и настройте окружение:
 
 ```bash
-python -m pip install pytest ruff
+cp .env.example .env
+export PYTHONPATH=src
+uvicorn app.main:app --host 0.0.0.0 --port 8000
 ```
 
-### 2. Подготовка манифеста
+Проверка:
+
+```bash
+curl http://localhost:8000/health
+curl -X POST http://localhost:8000/recognize \
+  -F "video=@sample.mp4"
+```
+
+JSON-вариант принимает поле `video_base64`. Параметры LLM-провайдера
+задаются переменными `NONVERBAL_LLM_*` из `.env.example`.
+
+### Подготовка исследовательского манифеста
 
 Пример для Slovo:
 
@@ -121,7 +153,7 @@ python scripts/data/build_sampled_manifest.py \
 `--split-mode random`. Для оценки обобщения между дикторами предпочтителен
 `--split-mode signer_independent`.
 
-### 3. Обучение
+### Обучение
 
 ```bash
 python scripts/train.py \
@@ -159,7 +191,7 @@ python scripts/train.py \
   --experiment-id C1_wlasl_then_slovo
 ```
 
-### 4. SigLIP2 / CLIP
+### SigLIP2 / CLIP
 
 Zero-shot:
 

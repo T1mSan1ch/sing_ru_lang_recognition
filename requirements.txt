@@ -1,17 +1,28 @@
-# Core ML stack — pure PyTorch, Python 3.12 compatible, no OpenMIM
+# Recognition API and runtime
+fastapi>=0.115.0,<1.0.0
+uvicorn[standard]>=0.30.0,<1.0.0
+pydantic-settings>=2.4.0,<3.0.0
+opencv-python-headless>=4.10.0,<5.0.0
+onnxruntime>=1.18.0,<2.0.0
+openai>=1.51.0,<2.0.0
+
+# Core ML stack — Python 3.12 compatible, no OpenMIM
 torch==2.6.0
 torchvision==0.21.0
 transformers>=4.51,<5.0
 accelerate>=0.34
 open_clip_torch>=2.26
-av>=12.0                 # PyAV — fallback video reader
+av>=12.0
 pillow>=10.0
-numpy>=1.26
+numpy>=1.26,<3.0
 pandas>=2.1
 scikit-learn>=1.4
 pyyaml>=6.0
 tqdm>=4.66
 matplotlib>=3.8
 
-# Data manifest tooling (already used in dataset adapters)
-# (no extra deps beyond pandas)
+# Development
+black>=24.8.0,<25.0.0
+flake8>=7.1.0,<8.0.0
+pytest>=8.0
+ruff>=0.11

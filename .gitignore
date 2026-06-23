@@ -1,27 +1,53 @@
-# Operating system and editor files
-.DS_Store
-Thumbs.db
-.idea/
-.vscode/
-.claude/
+# Model weights and local model files
+models/**
+!models/README.md
+!models/.gitkeep
+*.pt
+*.pth
+*.ckpt
+
+# Distribution and packaging
+.Python
+build/
+dist/
+*.egg-info/
+.eggs/
 
 # Python caches and virtual environments
 __pycache__/
 *.py[cod]
 *$py.class
+.venv/
+venv/
+env/
+ENV/
+
+# Tool caches and coverage
 .pytest_cache/
 .ruff_cache/
 .mypy_cache/
 .coverage
+.coverage.*
 htmlcov/
-.venv/
-venv/
-env/
+
+# IDE, editor, and operating-system files
+.idea/
+.vscode/
+.claude/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# Environment files
+.env
+.env.*
+!.env.example
 
 # Jupyter
 .ipynb_checkpoints/
 
-# Local datasets, manifests, checkpoints, and experiment outputs
+# Local datasets, manifests, experiment outputs, and runtime data
 /data/
 /manifests/
 /work_dirs/
@@ -29,13 +55,11 @@ env/
 /kaggle_output/
 /output/
 /tmp/
-*.pt
-*.pth
-*.ckpt
+celerybeat-schedule
 *.log
 *.tar.gz
 
-# Local archives and diploma documents are not part of the source repository
+# Local archives and diploma documents
 *.zip
 *.docx
 
